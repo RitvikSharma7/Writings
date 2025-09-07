@@ -24,7 +24,7 @@ int main(void){
 
 ```
 Output:  
-![Output]()  
+![Output](res1.png)  
 
 The output shows us the memory address of the variable. An interesting point is that this address is virtual, meaning it isn’t the actual physical location in RAM where the variable is stored. Instead, it’s mapped by the operating system to allow multiple programs to run simultaneously without memory conflicts. This is the essence of virtual memory, which we will explore in more detail shortly.
 
@@ -43,7 +43,7 @@ A computer runs multiple processes at once while it is powered on. When the user
 
 It is interesting to note that multiple processes of the same program can share the same specific memory segments if given permission. It is important to introduce the idea of parent and children processes now. The parent process is the original process, while the child process is a copy of the original process. This is a very efficient procedure, as the amount of memory needed is reduced drastically as a huge amount of processes are being run on a computer at a given time. By default, only the text segment is shared, but to explicitly share memory regions we can use mmap/shmget to do so (We will cover this later).
 
-![Output]()
+![Output](MemoryLayout.png)
 
 ## **Dynamic Memory Allocation**
 Heap memory's main function is dynamic memory allocation, which offers a flexible memory pool for data whose size is unknown at compile time or that must endure past the function's lifetime. In C, using a dynamic memory allocator is of great use when required to acquire additional virtual memory for a program. Details vary from system to system, but without loss of generality, we will assume that the heap is an area of demand-zero memory that begins immediately after the uninitialized data area and grows upward (toward higher addresses). We can illustrate this with the help of another example that examines memory segments of a C program.
@@ -76,7 +76,7 @@ int main(void){
 
 ```
 Output:  
-![Output]()
+![Output](Output2.png)
 An allocator maintains the heap as a collection of various-size blocks. Each block is a contiguous chunk of virtual memory that is either allocated or free.
 
 
@@ -89,13 +89,13 @@ Now let's dive deeper in malloc() and free() functions in C.
 These functions are part of the standard library in C (<stdlib.h>) and very powerful functions but require caution while using them.  
 **Malloc:** 
 This function returns a void pointer to the start of the memory allocated on the heap. It takes in a number which specifies the number of bytes required.  
-![Output]()  
+![Output](malloc.png)  
  In 32-bit mode, malloc returns a block whose address is always a multiple of 8. In 64-bit mode, the address is always a multiple of 16. Malloc does not initialize the memory it returns. Applications that want initialized dynamic memory can use calloc(), a thin wrapper around the malloc function that initializes the allocated memory to zero. Realloc() is a function which handles requests to add more memory.  
-![Output]()  
+![Output](realloc.png)  
 **Free:**
 Programs free allocated heap blocks by calling the free function. When a process terminates, all of its memory is returned to the system, including heap memory allocated by functions in the malloc package. 
 It is generally good  practice to free a block of memory that you used immediately after when you don't need it.  
-![Output]()  
+![Output](free.png)  
 Using these functions:  
 ```
 #include <stdio.h>
@@ -137,7 +137,7 @@ int main() {
 
 ```
 Output:  
-![Output]()  
+![Output](Output3.png)  
 It is interesting to note internally malloc() and free() used brk() and sbrk() to perform memory operations but are now mostly deprecated. Now for small to medium allocations they are still used, but for large memory allocation mmap() is used. Let’s take a look at these functions shall we.  
 
 **Brk and Sbrk:**   
@@ -146,12 +146,12 @@ If you pass a higher address, the kernel allocates more pages to your process (h
 If you pass a lower address, the kernel releases memory (heap shrinks).
 The address must be a valid address after the end of the BSS segment and properly aligned (page boundaries internally).
 Sbrk() is basically a wrapper around break which adds the memory automatically to brk().  
-![Output]()   
+![Output](sbrk.png)   
 The problem with this approach is fragmentation: small blocks freed in the middle of the heap create holes that cannot be returned to the operating system, leading to wasted space (external fragmentation). Additionally, each allocation is rounded to alignment boundaries, which wastes a few bytes per block (internal fragmentation). Because the heap can only shrink at the very top, memory in the middle often stays unusable. To handle this more efficiently, modern allocators use mmap for large allocations since it creates independent memory regions that can be released back to the OS, while still using brk/sbrk for small allocations. This hybrid strategy reduces fragmentation and improves memory management.
 Since we are praising mmap() so much, let's take a look at it!  
 **Mmap:**  
 mmap() is a system call that maps memory directly into a process’s virtual address space, either from a file or as anonymous memory for dynamic allocation. Unlike brk() and sbrk(), which can only grow or shrink a single contiguous heap region, mmap can create independent memory regions anywhere in the virtual address space. This allows large allocations to be safely isolated, returned to the operating system with munmap(), and reduces fragmentation issues.   
-![Output]()  
+![Output](mmp.png)  
 
 The bottom line is that modern memory allocators, such as glibc’s malloc, typically use brk/sbrk for small to medium allocations and mmap for large blocks, combining the efficiency of a contiguous heap with the flexibility and safety of independent memory mappings. There are many other memory allocation functions but these are the core functions that are used most commonly.
 
@@ -160,7 +160,7 @@ The bottom line is that modern memory allocators, such as glibc’s malloc, typi
 Let’s see what happens under the hood when we call these memory functions. Any practical allocator needs some data structure that allows it to distinguish block boundaries and to distinguish between allocated and free blocks. Most allocators embed this information in the blocks themselves. A typical block consists of a one-word header, the payload, and some additional padding. The header encodes the block size (including the header and any padding) as well as whether the block is allocated or free.
 The header is followed by the payload that the application requested when it calls malloc(). The payload is followed by a chunk of unused padding that can be any size. There are a number of reasons for the padding. . For example, the padding might be part of an allocator’s strategy for combating external fragmentation. Or it might be needed to satisfy the alignment requirement.  
 
-![Output]()  
+![Output](freelist.png)  
 
 When a program requests **n** bytes of memory, the allocator searches the free list for a free block that is large enough to hold the requested block. The manner in which the allocator performs this search is determined by the placement policy.   
 Types of placement policies:
