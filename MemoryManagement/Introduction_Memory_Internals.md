@@ -24,7 +24,7 @@ int main(void){
 
 ```
 Output:  
-![Output](res1.png)  
+![Output](final1.png)  
 
 The output shows us the memory address of the variable. An interesting point is that this address is virtual, meaning it isn’t the actual physical location in RAM where the variable is stored. Instead, it’s mapped by the operating system to allow multiple programs to run simultaneously without memory conflicts. This is the essence of virtual memory, which we will explore in more detail shortly.
 
