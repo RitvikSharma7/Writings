@@ -20,6 +20,7 @@ int main(void){
     int x = 10;
     int* px = &x; // Holds address of variable
     printf("Address of variable is: %p and value is %d", (void *)px, *px); // dereference pointer to get value
+    return 0;
 }
 
 ```
